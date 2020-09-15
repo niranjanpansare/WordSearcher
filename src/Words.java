@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -11,15 +13,22 @@ import java.util.TreeSet;
 
 public class Words {
 
+	private static final String WORDLIST_TXT = "wordlist.txt";
+	private static final String WORD_COMBINATIONS_TXT = "WordCombinations.txt";
+	private static NumberFormat formatter = new DecimalFormat("#0.00000");
+	private static Set<String> dictionary = new TreeSet<String>();
+	private static Set<String> wordCount = new TreeSet<String>();
+	private static List<List<String>> results = new ArrayList<>();
 	public static void main(String[] args) throws FileNotFoundException {
 		// TODO Auto-generated method stub
-		Set<String> dictionary = new TreeSet<String>();
-		Set<String> wordCount = new TreeSet<String>();
-		List<List<String>> results = new ArrayList<>();
+		long start = System.currentTimeMillis();
 		readWordListFromFile(dictionary);
 		searchWords(dictionary, results);
 		writeWordCombinationsInFile(wordCount, results);
 		printTotalCountOfWords(wordCount);
+		long end = System.currentTimeMillis();
+		System.out.print("Execution time is " + formatter.format((end - start) / 1000d) + " seconds");
+		
 	}
 
 	private static void printTotalCountOfWords(Set<String> wordCount) {
@@ -27,9 +36,9 @@ public class Words {
 	}
 
 	private static void writeWordCombinationsInFile(Set<String> wordCount, List<List<String>> results)throws FileNotFoundException {
-		try (PrintWriter out = new PrintWriter("WordCombinations.txt")) {
+		try (PrintWriter out = new PrintWriter(WORD_COMBINATIONS_TXT)) {
 			for (List<String> result : results) {
-				if (result.size() > 1) {
+				if (result.size() > 1 && result.size() < 3) {
 					String actualWord = "";
 					for (String word : result) {
 						actualWord = actualWord + word;
@@ -52,12 +61,19 @@ public class Words {
 	private static void searchWords(Set<String> dictionary, List<List<String>> results) {
 		Iterator<String> it = dictionary.iterator();
 		while (it.hasNext()) {
-			search(it.next(), dictionary, new Stack<String>(), results);
+			String input = it.next();
+			if(isWordContainsSixLetters(input)) {
+			search(input, dictionary, new Stack<String>(), results);
+			}
 		}
 	}
 
+	private static boolean isWordContainsSixLetters(String input) {
+		return input.trim().length()==6;
+	}
+
 	private static void readWordListFromFile(Set<String> dictionary) throws FileNotFoundException {
-		Scanner filescan = new Scanner(new File("wordlist.txt"));
+		Scanner filescan = new Scanner(new File(WORDLIST_TXT));
 		while (filescan.hasNext()) {
 			dictionary.add(filescan.nextLine().toLowerCase());
 		}
